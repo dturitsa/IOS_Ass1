@@ -11,6 +11,8 @@
 
 #define BUFFER_OFFSET(i) ((char *)NULL + (i))
 
+
+
 // Uniform index.
 enum
 {
@@ -28,7 +30,9 @@ enum
     NUM_ATTRIBUTES
 };
 
-GLfloat gCubeVertexData[216] = 
+bool isRotating = true;
+
+GLfloat gCubeVertexData[216] =
 {
     // Data layout for each line below is:
     // positionX, positionY, positionZ,     normalX, normalY, normalZ,
@@ -73,6 +77,7 @@ GLfloat gCubeVertexData[216] =
     0.5f, 0.5f, -0.5f,         0.0f, 0.0f, -1.0f,
     -0.5f, -0.5f, -0.5f,       0.0f, 0.0f, -1.0f,
     -0.5f, 0.5f, -0.5f,        0.0f, 0.0f, -1.0f
+    
 };
 
 @interface GameViewController () {
@@ -114,7 +119,25 @@ GLfloat gCubeVertexData[216] =
     view.drawableDepthFormat = GLKViewDrawableDepthFormat24;
     
     [self setupGL];
+    
+    //detec taps
+    UITapGestureRecognizer *tapGesture = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(handleTapGesture:)];
+    tapGesture.numberOfTapsRequired = 2;
+    [self.view addGestureRecognizer:tapGesture];
+   // [tapGesture release];
+    
+    //detectdrag
+    UIPanGestureRecognizer *panRecognizer;
+    panRecognizer = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(dragging:)];
+    [self.view addGestureRecognizer:panRecognizer];
+    
+    //detect pinch
+    UIPinchGestureRecognizer *pinchRecognizer;
+    pinchRecognizer = [[UIPinchGestureRecognizer alloc] initWithTarget:self action:@selector(pinching:)];
+    [self.view addGestureRecognizer:pinchRecognizer];
 }
+
+
 
 - (void)dealloc
 {    
@@ -123,6 +146,57 @@ GLfloat gCubeVertexData[216] =
     if ([EAGLContext currentContext] == self.context) {
         [EAGLContext setCurrentContext:nil];
     }
+}
+- (void)handleTapGesture:(UITapGestureRecognizer *)sender {
+    if (sender.state == UIGestureRecognizerStateRecognized) {
+        isRotating = !isRotating;
+        printf("doubletapped");
+    }
+}
+
+- (void)pinching:(UIPinchGestureRecognizer *)recognizer {
+    printf("pinched one off");
+}
+
+CGPoint pinchLocation;
+float scaleAmount[3];
+- (void) twoFingersScale:(UIPinchGestureRecognizer *) recognizer {
+    
+    //Handle scale gesture
+    pinchLocation = [recognizer locationInView:self.view];
+    pinchLocation = CGPointMake(pinchLocation.x - self.view.bounds.size.width/2, pinchLocation.y - self.view.bounds.size.height/2);
+    CGPoint oldPinchLocation = pinchLocation;
+    if ([recognizer state] == UIGestureRecognizerStateBegan || [recognizer state] == UIGestureRecognizerStateChanged) {
+        
+        pinchLocation = [recognizer locationInView:recognizer.view];
+        
+        scaleAmount[0] = pinchLocation.x - oldPinchLocation.x;
+        scaleAmount[1] = pinchLocation.y - oldPinchLocation.y;
+                //Send info to renderViewController
+        //[self.g scale:locationInView ammount:recognizer.scale];
+        
+        //reset recognizer
+        [recognizer setScale:1.0];
+    }
+    
+}
+
+
+CGPoint originalLocation;
+float xRotation;
+float yRotation;
+-(void)dragging:(UIPanGestureRecognizer *)gesture
+{
+    if(gesture.state == UIGestureRecognizerStateBegan)
+    {
+        //NSLog(@"Received a pan gesture");
+        originalLocation = [gesture locationInView:gesture.view];
+       // printf("started touching");
+    }
+    CGPoint newCoord = [gesture locationInView:gesture.view];
+    xRotation = newCoord.x-originalLocation.x;
+    yRotation = newCoord.y-originalLocation.y;
+   //printf("dragging");
 }
 
 - (void)didReceiveMemoryWarning
@@ -155,7 +229,7 @@ GLfloat gCubeVertexData[216] =
     
     self.effect = [[GLKBaseEffect alloc] init];
     self.effect.light0.enabled = GL_TRUE;
-    self.effect.light0.diffuseColor = GLKVector4Make(1.0f, 0.4f, 0.4f, 1.0f);
+    self.effect.light0.diffuseColor = GLKVector4Make(.4f, 1.0f, 0.4f, 1.0f);
     
     glEnable(GL_DEPTH_TEST);
     
@@ -201,15 +275,20 @@ GLfloat gCubeVertexData[216] =
     GLKMatrix4 baseModelViewMatrix = GLKMatrix4MakeTranslation(0.0f, 0.0f, -4.0f);
     baseModelViewMatrix = GLKMatrix4Rotate(baseModelViewMatrix, _rotation, 0.0f, 1.0f, 0.0f);
     
+    baseModelViewMatrix = GLKMatrix4Rotate(baseModelViewMatrix, xRotation * .01f, 0.0f, 1.0f, 0.0f);
+    baseModelViewMatrix = GLKMatrix4Rotate(baseModelViewMatrix, yRotation * .01f, 1.0f, 0.0f, 0.0f);
+    
     // Compute the model view matrix for the object rendered with GLKit
-    GLKMatrix4 modelViewMatrix = GLKMatrix4MakeTranslation(0.0f, 0.0f, -1.5f);
-    modelViewMatrix = GLKMatrix4Rotate(modelViewMatrix, _rotation, 1.0f, 1.0f, 1.0f);
+    GLKMatrix4 modelViewMatrix = GLKMatrix4MakeTranslation(0.0f, 0.0f, 0.0f);
+    //modelViewMatrix = GLKMatrix4Rotate(modelViewMatrix, _rotation, 1.0f, 1.0f, 1.0f);
+    modelViewMatrix = GLKMatrix4MakeScale(0.1f,0.1f,0.1f);
     modelViewMatrix = GLKMatrix4Multiply(baseModelViewMatrix, modelViewMatrix);
     
     self.effect.transform.modelviewMatrix = modelViewMatrix;
     
     // Compute the model view matrix for the object rendered with ES2
     modelViewMatrix = GLKMatrix4MakeTranslation(0.0f, 0.0f, 1.5f);
+    
     modelViewMatrix = GLKMatrix4Rotate(modelViewMatrix, _rotation, 1.0f, 1.0f, 1.0f);
     modelViewMatrix = GLKMatrix4Multiply(baseModelViewMatrix, modelViewMatrix);
     
@@ -217,7 +296,10 @@ GLfloat gCubeVertexData[216] =
     
     _modelViewProjectionMatrix = GLKMatrix4Multiply(projectionMatrix, modelViewMatrix);
     
-    _rotation += self.timeSinceLastUpdate * 0.5f;
+    if(isRotating){
+        _rotation += self.timeSinceLastUpdate * 0.5f;
+    }
+    
 }
 
 - (void)glkView:(GLKView *)view drawInRect:(CGRect)rect
@@ -227,11 +309,13 @@ GLfloat gCubeVertexData[216] =
     
     glBindVertexArrayOES(_vertexArray);
     
+    
     // Render the object with GLKit
     [self.effect prepareToDraw];
     
     glDrawArrays(GL_TRIANGLES, 0, 36);
     
+    /*
     // Render the object again with ES2
     glUseProgram(_program);
     
@@ -239,6 +323,7 @@ GLfloat gCubeVertexData[216] =
     glUniformMatrix3fv(uniforms[UNIFORM_NORMAL_MATRIX], 1, 0, _normalMatrix.m);
     
     glDrawArrays(GL_TRIANGLES, 0, 36);
+     */
 }
 
 #pragma mark -  OpenGL ES 2 shader compilation

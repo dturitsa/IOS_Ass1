@@ -104,6 +104,7 @@ GLfloat gCubeVertexData[216] =
 
 @implementation GameViewController
 
+float scaleAmount = 1.0f;
 - (void)viewDidLoad
 {
     [super viewDidLoad];
@@ -137,8 +138,6 @@ GLfloat gCubeVertexData[216] =
     [self.view addGestureRecognizer:pinchRecognizer];
 }
 
-
-
 - (void)dealloc
 {    
     [self tearDownGL];
@@ -154,49 +153,31 @@ GLfloat gCubeVertexData[216] =
     }
 }
 
-- (void)pinching:(UIPinchGestureRecognizer *)recognizer {
-    printf("pinched one off");
-}
-
-CGPoint pinchLocation;
-float scaleAmount[3];
-- (void) twoFingersScale:(UIPinchGestureRecognizer *) recognizer {
+- (void) pinching:(UIPinchGestureRecognizer *) recognizer {
     
-    //Handle scale gesture
-    pinchLocation = [recognizer locationInView:self.view];
-    pinchLocation = CGPointMake(pinchLocation.x - self.view.bounds.size.width/2, pinchLocation.y - self.view.bounds.size.height/2);
-    CGPoint oldPinchLocation = pinchLocation;
-    if ([recognizer state] == UIGestureRecognizerStateBegan || [recognizer state] == UIGestureRecognizerStateChanged) {
-        
-        pinchLocation = [recognizer locationInView:recognizer.view];
-        
-        scaleAmount[0] = pinchLocation.x - oldPinchLocation.x;
-        scaleAmount[1] = pinchLocation.y - oldPinchLocation.y;
-                //Send info to renderViewController
-        //[self.g scale:locationInView ammount:recognizer.scale];
-        
+    if (!isRotating && ([recognizer state] == UIGestureRecognizerStateBegan || [recognizer state] == UIGestureRecognizerStateChanged)) {
+        scaleAmount *= recognizer.scale;
         //reset recognizer
         [recognizer setScale:1.0];
     }
-    
 }
 
 
-CGPoint originalLocation;
+CGPoint oldLocation;
 float xRotation;
 float yRotation;
 -(void)dragging:(UIPanGestureRecognizer *)gesture
 {
-    if(gesture.state == UIGestureRecognizerStateBegan)
+        if(gesture.state == UIGestureRecognizerStateBegan)
     {
-        //NSLog(@"Received a pan gesture");
-        originalLocation = [gesture locationInView:gesture.view];
-       // printf("started touching");
+        oldLocation = [gesture locationInView:gesture.view];
     }
     CGPoint newCoord = [gesture locationInView:gesture.view];
-    xRotation = newCoord.x-originalLocation.x;
-    yRotation = newCoord.y-originalLocation.y;
-   //printf("dragging");
+    CGRect screenRect = [[UIScreen mainScreen] bounds];
+    xRotation += newCoord.x / screenRect.size.width - oldLocation.x / screenRect.size.width;
+    yRotation += newCoord.y / screenRect.size.width - oldLocation.y / screenRect.size.width;
+    oldLocation = [gesture locationInView:gesture.view];
+   printf("%.3f", xRotation);
 }
 
 - (void)didReceiveMemoryWarning
@@ -275,13 +256,13 @@ float yRotation;
     GLKMatrix4 baseModelViewMatrix = GLKMatrix4MakeTranslation(0.0f, 0.0f, -4.0f);
     baseModelViewMatrix = GLKMatrix4Rotate(baseModelViewMatrix, _rotation, 0.0f, 1.0f, 0.0f);
     
-    baseModelViewMatrix = GLKMatrix4Rotate(baseModelViewMatrix, xRotation * .01f, 0.0f, 1.0f, 0.0f);
-    baseModelViewMatrix = GLKMatrix4Rotate(baseModelViewMatrix, yRotation * .01f, 1.0f, 0.0f, 0.0f);
+    baseModelViewMatrix = GLKMatrix4Rotate(baseModelViewMatrix, xRotation, 0.0f, 1.0f, 0.0f);
+    baseModelViewMatrix = GLKMatrix4Rotate(baseModelViewMatrix, yRotation, 1.0f, 0.0f, 0.0f);
     
     // Compute the model view matrix for the object rendered with GLKit
     GLKMatrix4 modelViewMatrix = GLKMatrix4MakeTranslation(0.0f, 0.0f, 0.0f);
     //modelViewMatrix = GLKMatrix4Rotate(modelViewMatrix, _rotation, 1.0f, 1.0f, 1.0f);
-    modelViewMatrix = GLKMatrix4MakeScale(1.0f,1.0f,1.0f);
+    modelViewMatrix = GLKMatrix4MakeScale(scaleAmount,scaleAmount,scaleAmount);
     modelViewMatrix = GLKMatrix4Multiply(baseModelViewMatrix, modelViewMatrix);
     
     self.effect.transform.modelviewMatrix = modelViewMatrix;

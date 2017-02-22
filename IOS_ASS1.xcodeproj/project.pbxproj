@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		1B450D9C1E5D7A1A00EEE402 /* CPlusPlus.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1B450D9A1E5D7A1A00EEE402 /* CPlusPlus.cpp */; };
+		1B56506E1E5E0C6400738F16 /* MixTest.mm in Sources */ = {isa = PBXBuildFile; fileRef = 1B56506C1E5E0C6400738F16 /* MixTest.mm */; };
 		7ED26C8E1E5BD20F009C126F /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 7ED26C8D1E5BD20F009C126F /* main.m */; };
 		7ED26C911E5BD20F009C126F /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 7ED26C901E5BD20F009C126F /* AppDelegate.m */; };
 		7ED26C931E5BD20F009C126F /* Shader.fsh in Resources */ = {isa = PBXBuildFile; fileRef = 7ED26C921E5BD20F009C126F /* Shader.fsh */; };
@@ -37,6 +39,10 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		1B450D9A1E5D7A1A00EEE402 /* CPlusPlus.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = CPlusPlus.cpp; sourceTree = "<group>"; };
+		1B450D9B1E5D7A1A00EEE402 /* CPlusPlus.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CPlusPlus.h; sourceTree = "<group>"; };
+		1B56506C1E5E0C6400738F16 /* MixTest.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = MixTest.mm; sourceTree = "<group>"; };
+		1B56506D1E5E0C6400738F16 /* MixTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MixTest.h; sourceTree = "<group>"; };
 		7ED26C891E5BD20F009C126F /* IOS_ASS1.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = IOS_ASS1.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		7ED26C8D1E5BD20F009C126F /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
 		7ED26C8F1E5BD20F009C126F /* AppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
@@ -116,6 +122,10 @@
 				7ED26C9E1E5BD20F009C126F /* LaunchScreen.storyboard */,
 				7ED26CA11E5BD20F009C126F /* Info.plist */,
 				7ED26C8C1E5BD20F009C126F /* Supporting Files */,
+				1B450D9A1E5D7A1A00EEE402 /* CPlusPlus.cpp */,
+				1B450D9B1E5D7A1A00EEE402 /* CPlusPlus.h */,
+				1B56506C1E5E0C6400738F16 /* MixTest.mm */,
+				1B56506D1E5E0C6400738F16 /* MixTest.h */,
 			);
 			path = IOS_ASS1;
 			sourceTree = "<group>";
@@ -281,8 +291,10 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				1B450D9C1E5D7A1A00EEE402 /* CPlusPlus.cpp in Sources */,
 				7ED26C911E5BD20F009C126F /* AppDelegate.m in Sources */,
 				7ED26C981E5BD20F009C126F /* GameViewController.m in Sources */,
+				1B56506E1E5E0C6400738F16 /* MixTest.mm in Sources */,
 				7ED26C8E1E5BD20F009C126F /* main.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -515,6 +527,7 @@
 				7ED26CBC1E5BD20F009C126F /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 		7ED26CBD1E5BD20F009C126F /* Build configuration list for PBXNativeTarget "IOS_ASS1Tests" */ = {
 			isa = XCConfigurationList;
@@ -523,6 +536,7 @@
 				7ED26CBF1E5BD20F009C126F /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 		7ED26CC01E5BD20F009C126F /* Build configuration list for PBXNativeTarget "IOS_ASS1UITests" */ = {
 			isa = XCConfigurationList;
@@ -531,6 +545,7 @@
 				7ED26CC21E5BD20F009C126F /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};

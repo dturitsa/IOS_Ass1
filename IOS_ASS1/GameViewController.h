@@ -8,7 +8,17 @@
 
 #import <UIKit/UIKit.h>
 #import <GLKit/GLKit.h>
+#import "MixTest.h"
 
 @interface GameViewController : GLKViewController
+{
+    MixTest *theObject;
+}
+
+- (IBAction)ResetBut:(id)sender;
+- (IBAction)q8But:(id)sender;
+@property (weak, nonatomic) IBOutlet UILabel *posLabel;
+@property (weak, nonatomic) IBOutlet UILabel *rotLabel;
+@property (weak, nonatomic) IBOutlet UILabel *q8Label;
 
 @end

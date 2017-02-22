@@ -8,7 +8,6 @@
 
 #import "GameViewController.h"
 #import <OpenGLES/ES2/glext.h>
-
 #define BUFFER_OFFSET(i) ((char *)NULL + (i))
 
 
@@ -89,7 +88,9 @@ GLfloat gCubeVertexData[216] =
     
     GLuint _vertexArray;
     GLuint _vertexBuffer;
+    
 }
+
 @property (strong, nonatomic) EAGLContext *context;
 @property (strong, nonatomic) GLKBaseEffect *effect;
 
@@ -103,6 +104,9 @@ GLfloat gCubeVertexData[216] =
 @end
 
 @implementation GameViewController
+@synthesize posLabel;
+@synthesize rotLabel;
+@synthesize q8Label;
 
 float scaleAmount = 1.0f;
 - (void)viewDidLoad
@@ -127,16 +131,47 @@ float scaleAmount = 1.0f;
     [self.view addGestureRecognizer:tapGesture];
    // [tapGesture release];
     
-    //detectdrag
+    //detect 1 finger drag
     UIPanGestureRecognizer *panRecognizer;
     panRecognizer = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(dragging:)];
+    panRecognizer.maximumNumberOfTouches = 1;
     [self.view addGestureRecognizer:panRecognizer];
+    
+    //detect 2 finger drag
+    UIPanGestureRecognizer *dragRecognizer;
+    dragRecognizer = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(translateDetecter:)];
+    dragRecognizer.minimumNumberOfTouches = 2;
+    [self.view addGestureRecognizer:dragRecognizer];
     
     //detect pinch
     UIPinchGestureRecognizer *pinchRecognizer;
     pinchRecognizer = [[UIPinchGestureRecognizer alloc] initWithTarget:self action:@selector(pinching:)];
     [self.view addGestureRecognizer:pinchRecognizer];
+    
+    theObject = [[MixTest alloc] init];
 }
+
+- (IBAction)ResetBut:(id)sender{
+    printf("Reset Button pressed");
+    xRotation = 0.0f;
+    yRotation = 0.0f;
+    xPosition = 0.0f;
+    yPosition = 0.0f;
+    _rotation = 0.0f;
+    
+}
+bool usingCppVal = true;
+- (IBAction)q8But:(id)sender {
+    if(!usingCppVal){
+        [q8Label setText:[NSString stringWithFormat:@"Obj C value: %d", [theObject incrementObjCVal]]];
+    } else{
+        [q8Label setText:[NSString stringWithFormat:@"Cpp value: %d", [theObject incrementCppVal]]];
+    }
+    usingCppVal = !usingCppVal;
+    
+}
+
+ 
 
 - (void)dealloc
 {    
@@ -162,23 +197,49 @@ float scaleAmount = 1.0f;
     }
 }
 
-
-CGPoint oldLocation;
+//drag-rotate detection
+CGPoint oldRotation;
 float xRotation;
 float yRotation;
 -(void)dragging:(UIPanGestureRecognizer *)gesture
 {
+    if(!isRotating){
         if(gesture.state == UIGestureRecognizerStateBegan)
-    {
-        oldLocation = [gesture locationInView:gesture.view];
+        {
+            oldRotation = [gesture locationInView:gesture.view];
+        }
+        CGPoint newCoord = [gesture locationInView:gesture.view];
+        CGRect screenRect = [[UIScreen mainScreen] bounds];
+        xRotation += newCoord.x / screenRect.size.width - oldRotation.x / screenRect.size.width;
+        yRotation += newCoord.y / screenRect.size.width - oldRotation.y / screenRect.size.width;
+        oldRotation = [gesture locationInView:gesture.view];
     }
-    CGPoint newCoord = [gesture locationInView:gesture.view];
-    CGRect screenRect = [[UIScreen mainScreen] bounds];
-    xRotation += newCoord.x / screenRect.size.width - oldLocation.x / screenRect.size.width;
-    yRotation += newCoord.y / screenRect.size.width - oldLocation.y / screenRect.size.width;
-    oldLocation = [gesture locationInView:gesture.view];
-   printf("%.3f", xRotation);
+   
 }
+
+//drag-translate detection
+CGPoint oldLocation;
+float xPosition;
+float yPosition;
+float zPosition;
+-(void)translateDetecter:(UIPanGestureRecognizer *)gesture
+{
+    if(!isRotating){
+        if(gesture.state == UIGestureRecognizerStateBegan) {
+            oldLocation = [gesture locationInView:gesture.view];
+        }
+        CGPoint newCoord = [gesture locationInView:gesture.view];
+        CGRect screenRect = [[UIScreen mainScreen] bounds];
+        xPosition += newCoord.x / screenRect.size.width - oldLocation.x / screenRect.size.width;
+        yPosition += newCoord.y / screenRect.size.width - oldLocation.y / screenRect.size.width;
+        
+        oldLocation = [gesture locationInView:gesture.view];
+        //printf("%.3f", xPosition);
+    }
+    
+    
+}
+
 
 - (void)didReceiveMemoryWarning
 {
@@ -244,6 +305,17 @@ float yRotation;
     }
 }
 
+-(void)updatePosLabel{
+    NSString *labelString = [NSString stringWithFormat:@"Position: %.2f %.2f %.2f", xPosition, yPosition, zPosition];
+    // labelString = [labelString stringByAppendingString:[NSString stringWithFormat:@"%1.2f", yPosition]];
+    self.posLabel.text = labelString;
+    
+    NSString *rotLabelString = [NSString stringWithFormat:@"Rotation: %.2f %.2f %.2f",xRotation, yRotation, zPosition];
+    // labelString = [labelString stringByAppendingString:[NSString stringWithFormat:@"%1.2f", yPosition]];
+    self.rotLabel.text = rotLabelString;
+}
+
+
 #pragma mark - GLKView and GLKViewController delegate methods
 
 - (void)update
@@ -253,35 +325,27 @@ float yRotation;
     
     self.effect.transform.projectionMatrix = projectionMatrix;
     
-    GLKMatrix4 baseModelViewMatrix = GLKMatrix4MakeTranslation(0.0f, 0.0f, -4.0f);
-    baseModelViewMatrix = GLKMatrix4Rotate(baseModelViewMatrix, _rotation, 0.0f, 1.0f, 0.0f);
-    
+    GLKMatrix4 baseModelViewMatrix = GLKMatrix4MakeTranslation(xPosition, -yPosition, -4.0f);
     baseModelViewMatrix = GLKMatrix4Rotate(baseModelViewMatrix, xRotation, 0.0f, 1.0f, 0.0f);
     baseModelViewMatrix = GLKMatrix4Rotate(baseModelViewMatrix, yRotation, 1.0f, 0.0f, 0.0f);
     
-    // Compute the model view matrix for the object rendered with GLKit
     GLKMatrix4 modelViewMatrix = GLKMatrix4MakeTranslation(0.0f, 0.0f, 0.0f);
-    //modelViewMatrix = GLKMatrix4Rotate(modelViewMatrix, _rotation, 1.0f, 1.0f, 1.0f);
     modelViewMatrix = GLKMatrix4MakeScale(scaleAmount,scaleAmount,scaleAmount);
     modelViewMatrix = GLKMatrix4Multiply(baseModelViewMatrix, modelViewMatrix);
-    
+ 
     self.effect.transform.modelviewMatrix = modelViewMatrix;
-    
-    // Compute the model view matrix for the object rendered with ES2
-    modelViewMatrix = GLKMatrix4MakeTranslation(0.0f, 0.0f, 1.5f);
-    
-    modelViewMatrix = GLKMatrix4Rotate(modelViewMatrix, _rotation, 1.0f, 1.0f, 1.0f);
-    modelViewMatrix = GLKMatrix4Multiply(baseModelViewMatrix, modelViewMatrix);
     
     _normalMatrix = GLKMatrix3InvertAndTranspose(GLKMatrix4GetMatrix3(modelViewMatrix), NULL);
     
     _modelViewProjectionMatrix = GLKMatrix4Multiply(projectionMatrix, modelViewMatrix);
     
     if(isRotating){
-        _rotation += self.timeSinceLastUpdate * 0.5f;
+        xRotation += self.timeSinceLastUpdate * 0.5f;
     }
+    [self updatePosLabel];
     
 }
+
 
 - (void)glkView:(GLKView *)view drawInRect:(CGRect)rect
 {
@@ -460,3 +524,5 @@ float yRotation;
 }
 
 @end
+
+

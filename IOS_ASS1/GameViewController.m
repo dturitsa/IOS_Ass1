@@ -108,7 +108,25 @@ GLfloat gCubeVertexData[216] =
 @synthesize rotLabel;
 @synthesize q8Label;
 
+//how much the displayed object is scaled
 float scaleAmount = 1.0f;
+
+//location of the UI gesture in the previous frame
+CGPoint oldLocation;
+
+//the position of the object
+float xPosition, yPosition, zPosition;
+
+//the rotation of the object
+float xRotation, yRotation, zRotation;
+
+//rotation of the 2 finger UI gesture in the previous frame
+CGPoint oldRotation;
+
+//is the Cpp value used for (Question 8)
+bool usingCppVal = true;
+
+
 - (void)viewDidLoad
 {
     [super viewDidLoad];
@@ -151,16 +169,15 @@ float scaleAmount = 1.0f;
     theObject = [[MixTest alloc] init];
 }
 
+//resets position and rotation
 - (IBAction)ResetBut:(id)sender{
-    printf("Reset Button pressed");
     xRotation = 0.0f;
     yRotation = 0.0f;
     xPosition = 0.0f;
     yPosition = 0.0f;
-    _rotation = 0.0f;
-    
 }
-bool usingCppVal = true;
+
+//the button action for incrementing and displaying the int for Q8
 - (IBAction)q8But:(id)sender {
     if(!usingCppVal){
         [q8Label setText:[NSString stringWithFormat:@"Obj C value: %d", [theObject incrementObjCVal]]];
@@ -184,10 +201,10 @@ bool usingCppVal = true;
 - (void)handleTapGesture:(UITapGestureRecognizer *)sender {
     if (sender.state == UIGestureRecognizerStateRecognized) {
         isRotating = !isRotating;
-        printf("doubletapped");
     }
 }
 
+//handles pinching
 - (void) pinching:(UIPinchGestureRecognizer *) recognizer {
     
     if (!isRotating && ([recognizer state] == UIGestureRecognizerStateBegan || [recognizer state] == UIGestureRecognizerStateChanged)) {
@@ -198,9 +215,6 @@ bool usingCppVal = true;
 }
 
 //drag-rotate detection
-CGPoint oldRotation;
-float xRotation;
-float yRotation;
 -(void)dragging:(UIPanGestureRecognizer *)gesture
 {
     if(!isRotating){
@@ -218,10 +232,7 @@ float yRotation;
 }
 
 //drag-translate detection
-CGPoint oldLocation;
-float xPosition;
-float yPosition;
-float zPosition;
+
 -(void)translateDetecter:(UIPanGestureRecognizer *)gesture
 {
     if(!isRotating){
@@ -234,10 +245,7 @@ float zPosition;
         yPosition += newCoord.y / screenRect.size.width - oldLocation.y / screenRect.size.width;
         
         oldLocation = [gesture locationInView:gesture.view];
-        //printf("%.3f", xPosition);
     }
-    
-    
 }
 
 
@@ -310,7 +318,7 @@ float zPosition;
     // labelString = [labelString stringByAppendingString:[NSString stringWithFormat:@"%1.2f", yPosition]];
     self.posLabel.text = labelString;
     
-    NSString *rotLabelString = [NSString stringWithFormat:@"Rotation: %.2f %.2f %.2f",xRotation, yRotation, zPosition];
+    NSString *rotLabelString = [NSString stringWithFormat:@"Rotation: %.2f %.2f %.2f",xRotation, yRotation, zRotation];
     // labelString = [labelString stringByAppendingString:[NSString stringWithFormat:@"%1.2f", yPosition]];
     self.rotLabel.text = rotLabelString;
 }
@@ -359,16 +367,7 @@ float zPosition;
     [self.effect prepareToDraw];
     
     glDrawArrays(GL_TRIANGLES, 0, 36);
-    
-    /*
-    // Render the object again with ES2
-    glUseProgram(_program);
-    
-    glUniformMatrix4fv(uniforms[UNIFORM_MODELVIEWPROJECTION_MATRIX], 1, 0, _modelViewProjectionMatrix.m);
-    glUniformMatrix3fv(uniforms[UNIFORM_NORMAL_MATRIX], 1, 0, _normalMatrix.m);
-    
-    glDrawArrays(GL_TRIANGLES, 0, 36);
-     */
+
 }
 
 #pragma mark -  OpenGL ES 2 shader compilation

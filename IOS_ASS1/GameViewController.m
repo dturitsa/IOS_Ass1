@@ -30,7 +30,7 @@ enum
 };
 
 bool isRotating = true;
-
+/*
 GLfloat gCubeVertexData[216] =
 {
     // Data layout for each line below is:
@@ -78,6 +78,33 @@ GLfloat gCubeVertexData[216] =
     -0.5f, 0.5f, -0.5f,        0.0f, 0.0f, -1.0f
     
 };
+ */
+
+static GLfloat v_quads[] = {1.0f,-1.0f,-1.0f,1.0f,-1.0f,1.0f,-1.0f,-1.0f,1.0f,-1.0f,-1.0f,-1.0f,
+    1.0f,1.0f,-0.999999f,-1.0f,1.0f,-1.0f,-1.0f,1.0f,1.0f,0.999999f,1.0f,1.000001f,
+    1.0f,-1.0f,-1.0f,1.0f,1.0f,-0.999999f,0.999999f,1.0f,1.000001f,1.0f,-1.0f,1.0f,
+    1.0f,-1.0f,1.0f,0.999999f,1.0f,1.000001f,-1.0f,1.0f,1.0f,-1.0f,-1.0f,1.0f,
+    -1.0f,-1.0f,1.0f,-1.0f,1.0f,1.0f,-1.0f,1.0f,-1.0f,-1.0f,-1.0f,-1.0f,
+    1.0f,1.0f,-0.999999f,1.0f,-1.0f,-1.0f,-1.0f,-1.0f,-1.0f,-1.0f,1.0f,-1.0f,
+};
+
+static GLfloat vt_quads[] = {
+    
+    
+    
+    
+    
+};
+
+static GLfloat vn_quads[] = {0.0f,-1.0f,0.0f,0.0f,-1.0f,0.0f,0.0f,-1.0f,0.0f,0.0f,-1.0f,0.0f,
+    0.0f,1.0f,0.0f,0.0f,1.0f,0.0f,0.0f,1.0f,0.0f,0.0f,1.0f,0.0f,
+    1.0f,0.0f,0.0f,1.0f,0.0f,0.0f,1.0f,0.0f,0.0f,1.0f,0.0f,0.0f,
+    0.0f,0.0f,1.0f,0.0f,0.0f,1.0f,0.0f,0.0f,1.0f,0.0f,0.0f,1.0f,
+    -1.0f,0.0f,0.0f,-1.0f,0.0f,0.0f,-1.0f,0.0f,0.0f,-1.0f,0.0f,0.0f,
+    0.0f,0.0f,-1.0f,0.0f,0.0f,-1.0f,0.0f,0.0f,-1.0f,0.0f,0.0f,-1.0f,
+};
+
+
 
 @interface GameViewController () {
     GLuint _program;
@@ -288,13 +315,57 @@ bool usingCppVal = true;
     
     glGenBuffers(1, &_vertexBuffer);
     glBindBuffer(GL_ARRAY_BUFFER, _vertexBuffer);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(gCubeVertexData), gCubeVertexData, GL_STATIC_DRAW);
+    
+    long size = sizeof(v_quads) * 2;
+    GLfloat mixedArray[size];
+    //NSLog(@"%u", size);
+   // NSLog(@"%u", sizeof(vn_quads));
+
+    int j = 0;
+     int k = 0;
+    for(int i = 0; i < size; i++){
+        //NSLog(@"%u", i%6);
+        if(i%6 < 3){
+            mixedArray[i] = v_quads[j];
+            j++;
+        }else{
+            mixedArray[i] = vn_quads[k];
+            k++;
+        }
+        NSLog(@"%.2f", mixedArray[i]);
+  
+    }
+    
+    glBufferData(GL_ARRAY_BUFFER, sizeof(mixedArray), mixedArray, GL_STATIC_DRAW);
+    
     
     glEnableVertexAttribArray(GLKVertexAttribPosition);
-    glVertexAttribPointer(GLKVertexAttribPosition, 3, GL_FLOAT, GL_FALSE, 24, BUFFER_OFFSET(0));
+   glVertexAttribPointer(GLKVertexAttribPosition, 3, GL_FLOAT, GL_FALSE, 24, BUFFER_OFFSET(0));
+    //glVertexAttribPointer(GLKVertexAttribPosition3, GL_FLOAT, 0, v_quads);
+    
+   // glBufferData(GL_ARRAY_BUFFER, sizeof(vn_quads), vn_quads, GL_STATIC_DRAW);
     glEnableVertexAttribArray(GLKVertexAttribNormal);
     glVertexAttribPointer(GLKVertexAttribNormal, 3, GL_FLOAT, GL_FALSE, 24, BUFFER_OFFSET(12));
     
+    
+    
+    //new
+    /*
+    std::vector< glm::vec3 > vertices;
+    std::vector< glm::vec2 > uvs;
+    std::vector< glm::vec3 > normals; // Won't be used at the moment.
+    bool res = loadOBJ("cube.obj", vertices, uvs, normals);
+*/
+  //  glBufferData(GL_ARRAY_BUFFER, sizeof(v_quads), v_quads, GL_STATIC_DRAW);
+    /*
+    glVertexPointer(3, GL_FLOAT, 0, v_quads);
+    glTexCoordPointer(2, GL_FLOAT, 0, vt_quads);
+    glNormalPointer(GL_FLOAT, 0, vn_quads);
+    if(glLockArraysEXT!=NULL) {glLockArraysEXT (0,24);}
+    glDrawArrays(GL_QUADS, 0, 24);
+    if(glUnlockArraysEXT!=NULL) {glUnlockArraysEXT();}
+    //end new
+    */
     glBindVertexArrayOES(0);
 }
 
